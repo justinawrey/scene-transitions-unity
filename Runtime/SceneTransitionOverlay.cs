@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -34,18 +35,31 @@ namespace SceneTransitions
       StartCoroutine(LoadSceneRoutine(toSceneName, setupRoutine, OnFinishCallback));
     }
 
+    private void NotifyGameObjects()
+    {
+      List<GameObject> rootObjects = new List<GameObject>();
+      SceneManager.GetActiveScene().GetRootGameObjects(rootObjects);
+      foreach (GameObject gameObject in rootObjects)
+      {
+        gameObject.BroadcastMessage("OnBeforeNextSceneSetup", null, SendMessageOptions.DontRequireReceiver);
+      }
+    }
+
     private IEnumerator LoadSceneRoutine(string toSceneName, IEnumerator setupRoutine, Action OnFinishCallback)
     {
       // Let the transition in animation play
       _animator.SetBool("SceneVisible", false);
       yield return new WaitForSeconds(_halfTransitionDuration);
 
-      // Load the new scene first, so the setup routine can operate on it properly
-      yield return LoadSceneAsync(toSceneName);
+      // Before doing any setup logic for the next scene,
+      // notify all game objects of the scene change so they can unload accordingly.
+      NotifyGameObjects();
       if (setupRoutine != null)
       {
         yield return setupRoutine;
       }
+
+      yield return LoadSceneAsync(toSceneName);
 
       // Let the transition out animation play
       _animator.SetBool("SceneVisible", true);
