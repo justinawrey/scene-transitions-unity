@@ -35,13 +35,13 @@ namespace SceneTransitions
       StartCoroutine(LoadSceneRoutine(toSceneName, setupRoutine, OnFinishCallback));
     }
 
-    private void NotifyGameObjects()
+    private void NotifyGameObjects(string cbName)
     {
       List<GameObject> rootObjects = new List<GameObject>();
       SceneManager.GetActiveScene().GetRootGameObjects(rootObjects);
       foreach (GameObject gameObject in rootObjects)
       {
-        gameObject.BroadcastMessage("OnBeforeNextSceneSetup", null, SendMessageOptions.DontRequireReceiver);
+        gameObject.BroadcastMessage(cbName, null, SendMessageOptions.DontRequireReceiver);
       }
     }
 
@@ -49,11 +49,10 @@ namespace SceneTransitions
     {
       // Let the transition in animation play
       _animator.SetBool("SceneVisible", false);
+      NotifyGameObjects("OnTransitionOutStart");
       yield return new WaitForSeconds(_halfTransitionDuration);
+      NotifyGameObjects("OnTransitionOutEnd");
 
-      // Before doing any setup logic for the next scene,
-      // notify all game objects of the scene change so they can unload accordingly.
-      NotifyGameObjects();
       if (setupRoutine != null)
       {
         yield return setupRoutine;
@@ -63,7 +62,10 @@ namespace SceneTransitions
 
       // Let the transition out animation play
       _animator.SetBool("SceneVisible", true);
+      NotifyGameObjects("OnTransitionInStart");
       yield return new WaitForSeconds(_halfTransitionDuration);
+      NotifyGameObjects("OnTransitionInEnd");
+
       OnFinishCallback();
     }
   }
