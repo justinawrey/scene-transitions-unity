@@ -8,7 +8,7 @@ namespace SceneTransitions
     private static GameObject _sceneTransitionOverlayPrefab;
     private static GameObject _transitionObject;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
     public static void OnAfterSceneLoad()
     {
       _sceneTransitionOverlayPrefab = Resources.Load<GameObject>("Prefabs/scene-transition-overlay");
