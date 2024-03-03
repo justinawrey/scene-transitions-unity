@@ -1,8 +1,30 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SceneTransitions
 {
+  public enum SceneTransitionCallbackTiming
+  {
+    BeforeNextSceneLoad,
+    AfterNextSceneLoad
+  }
+
+  public class SetupRoutine
+  {
+    private IEnumerator _routine;
+    private SceneTransitionCallbackTiming _timing;
+
+    public IEnumerator Routine => _routine;
+    public SceneTransitionCallbackTiming Timing => _timing;
+
+    public SetupRoutine(IEnumerator routine, SceneTransitionCallbackTiming timing)
+    {
+      _routine = routine;
+      _timing = timing;
+    }
+  }
+
   public static class SceneTransitionManager
   {
     private static GameObject _sceneTransitionOverlayPrefab;
@@ -15,7 +37,7 @@ namespace SceneTransitions
     }
 
     // setupRoutine is executed after the new scene is loaded, but before the fade in transition
-    public static void LoadScene(string toSceneName, IEnumerator setupRoutine = null)
+    public static void LoadScene(string toSceneName, List<SetupRoutine> setupRoutines = null)
     {
       if (_transitionObject != null)
       {
@@ -23,7 +45,7 @@ namespace SceneTransitions
       }
 
       _transitionObject = GameObject.Instantiate(_sceneTransitionOverlayPrefab, Vector3.zero, Quaternion.identity);
-      _transitionObject.GetComponent<SceneTransitionOverlay>().LoadScene(toSceneName, setupRoutine, OnTransitionComplete);
+      _transitionObject.GetComponent<SceneTransitionOverlay>().LoadScene(toSceneName, setupRoutines, OnTransitionComplete);
     }
 
     private static void OnTransitionComplete()

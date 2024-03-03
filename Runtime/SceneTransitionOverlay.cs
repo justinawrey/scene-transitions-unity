@@ -12,7 +12,7 @@ namespace SceneTransitions
   // and the old scene unloads.
   public class SceneTransitionOverlay : MonoBehaviour
   {
-    [SerializeField] private float _halfTransitionDuration = 0.5f;
+    [SerializeField] private float _transitionDuration = 1;
     private Animator _animator;
 
     private void Awake()
@@ -30,9 +30,9 @@ namespace SceneTransitions
       }
     }
 
-    public void LoadScene(string toSceneName, IEnumerator setupRoutine, Action OnFinishCallback)
+    public void LoadScene(string toSceneName, List<SetupRoutine> setupRoutines, Action OnFinishCallback)
     {
-      StartCoroutine(LoadSceneRoutine(toSceneName, setupRoutine, OnFinishCallback));
+      StartCoroutine(LoadSceneRoutine(toSceneName, setupRoutines, OnFinishCallback));
     }
 
     private void NotifyGameObjects(string cbName)
@@ -45,25 +45,49 @@ namespace SceneTransitions
       }
     }
 
-    private IEnumerator LoadSceneRoutine(string toSceneName, IEnumerator setupRoutine, Action OnFinishCallback)
+    private IEnumerator LoadSceneRoutine(string toSceneName, List<SetupRoutine> setupRoutines, Action OnFinishCallback)
     {
+      List<IEnumerator> beforeNextSceneLoadSetupRoutines = new List<IEnumerator>();
+      List<IEnumerator> afterNextSceneLoadSetupRoutines = new List<IEnumerator>();
+
+      // preserve sort order
+      if (setupRoutines != null)
+      {
+        foreach (SetupRoutine routine in setupRoutines)
+        {
+          if (routine.Timing == SceneTransitionCallbackTiming.BeforeNextSceneLoad)
+          {
+            beforeNextSceneLoadSetupRoutines.Add(routine.Routine);
+          }
+          else
+          {
+            afterNextSceneLoadSetupRoutines.Add(routine.Routine);
+          }
+        }
+      }
+
       // Let the transition in animation play
       _animator.SetBool("SceneVisible", false);
       NotifyGameObjects("OnTransitionOutStart");
-      yield return new WaitForSeconds(_halfTransitionDuration);
+      yield return new WaitForSeconds(_transitionDuration / 2f);
       NotifyGameObjects("OnTransitionOutEnd");
 
-      if (setupRoutine != null)
+      foreach (IEnumerator routine in beforeNextSceneLoadSetupRoutines)
       {
-        yield return setupRoutine;
+        yield return routine;
       }
 
       yield return LoadSceneAsync(toSceneName);
 
+      foreach (IEnumerator routine in afterNextSceneLoadSetupRoutines)
+      {
+        yield return routine;
+      }
+
       // Let the transition out animation play
       _animator.SetBool("SceneVisible", true);
       NotifyGameObjects("OnTransitionInStart");
-      yield return new WaitForSeconds(_halfTransitionDuration);
+      yield return new WaitForSeconds(_transitionDuration / 2f);
       NotifyGameObjects("OnTransitionInEnd");
 
       OnFinishCallback();
