@@ -50,7 +50,7 @@ namespace SceneTransitions
       List<IEnumerator> beforeNextSceneLoadSetupRoutines = new List<IEnumerator>();
       List<IEnumerator> afterNextSceneLoadSetupRoutines = new List<IEnumerator>();
 
-      // preserve sort order
+      // preserve sort order!
       if (setupRoutines != null)
       {
         foreach (SetupRoutine routine in setupRoutines)
