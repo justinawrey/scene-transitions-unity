@@ -36,7 +36,6 @@ namespace SceneTransitions
       _sceneTransitionOverlayPrefab = Resources.Load<GameObject>("Prefabs/scene-transition-overlay");
     }
 
-    // setupRoutine is executed after the new scene is loaded, but before the fade in transition
     public static void LoadScene(string toSceneName, List<SetupRoutine> setupRoutines = null)
     {
       if (_transitionObject != null)
