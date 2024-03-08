@@ -14,7 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _defaultTransition: {fileID: 6496502899528591210, guid: 2a598868072024c9d9dcabbcbd9ae9b1,
     type: 3}
-  _overrides:
-  - ToSceneName: Scene 2
-    Transition: {fileID: 7204845304407578626, guid: 8e7e6b3f7429446dd8eee12dc33065fe,
-      type: 3}
+  _overrides: []
