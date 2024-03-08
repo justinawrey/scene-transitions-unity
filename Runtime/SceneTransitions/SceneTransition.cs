@@ -10,15 +10,16 @@ namespace SceneTransitions
   // because it will persist across scenes.  If we were to start the scene load
   // coroutine from the trigger object, the coroutine would die right when the new scene loads
   // and the old scene unloads.
-  public class SceneTransitionOverlay : MonoBehaviour
+  public abstract class SceneTransition : MonoBehaviour
   {
-    [SerializeField] private float _transitionDuration = 1;
-    private Animator _animator;
+    protected abstract IEnumerator TransitionOut();
+    protected abstract IEnumerator TransitionIn();
+    protected virtual void Setup() { }
 
     private void Awake()
     {
-      _animator = GetComponent<Animator>();
       DontDestroyOnLoad(gameObject);
+      Setup();
     }
 
     private IEnumerator LoadSceneAsync(string name)
@@ -66,10 +67,8 @@ namespace SceneTransitions
         }
       }
 
-      // Let the transition in animation play
-      _animator.SetBool("SceneVisible", false);
       NotifyGameObjects("OnTransitionOutStart");
-      yield return new WaitForSeconds(_transitionDuration / 2f);
+      yield return TransitionOut();
       NotifyGameObjects("OnTransitionOutEnd");
 
       foreach (IEnumerator routine in beforeNextSceneLoadSetupRoutines)
@@ -84,10 +83,8 @@ namespace SceneTransitions
         yield return routine;
       }
 
-      // Let the transition out animation play
-      _animator.SetBool("SceneVisible", true);
       NotifyGameObjects("OnTransitionInStart");
-      yield return new WaitForSeconds(_transitionDuration / 2f);
+      yield return TransitionIn();
       NotifyGameObjects("OnTransitionInEnd");
 
       OnFinishCallback();

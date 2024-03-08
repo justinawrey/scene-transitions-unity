@@ -27,13 +27,23 @@ namespace SceneTransitions
 
   public static class SceneTransitionManager
   {
-    private static GameObject _sceneTransitionOverlayPrefab;
+    private static SceneTransitionSettings _settings;
     private static GameObject _transitionObject;
+
+    private static void TryLoadSettings()
+    {
+      // try to get user defined settings first
+      _settings = Resources.Load<SceneTransitionSettings>("scene-transition-settings");
+      if (_settings == null)
+      {
+        _settings = Resources.Load<SceneTransitionSettings>("default-scene-transition-settings");
+      }
+    }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
     public static void OnAfterSceneLoad()
     {
-      _sceneTransitionOverlayPrefab = Resources.Load<GameObject>("Prefabs/scene-transition-overlay");
+      TryLoadSettings();
     }
 
     public static void LoadScene(string toSceneName, List<SetupRoutine> setupRoutines = null)
@@ -43,8 +53,9 @@ namespace SceneTransitions
         return;
       }
 
-      _transitionObject = GameObject.Instantiate(_sceneTransitionOverlayPrefab, Vector3.zero, Quaternion.identity);
-      _transitionObject.GetComponent<SceneTransitionOverlay>().LoadScene(toSceneName, setupRoutines, OnTransitionComplete);
+      SceneTransition transition = _settings.GetTransitionForScene(toSceneName);
+      _transitionObject = GameObject.Instantiate(transition.gameObject, Vector3.zero, Quaternion.identity);
+      _transitionObject.GetComponent<SceneTransition>().LoadScene(toSceneName, setupRoutines, OnTransitionComplete);
     }
 
     private static void OnTransitionComplete()
