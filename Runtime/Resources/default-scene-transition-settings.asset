@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b7c0933ea5fc4cfa9dec48b2f04dc41, type: 3}
   m_Name: default-scene-transition-settings
   m_EditorClassIdentifier: 
-  _defaultTransition: {fileID: 6496502899528591210, guid: 2a598868072024c9d9dcabbcbd9ae9b1,
-    type: 3}
+  _defaultTransitions:
+  - {fileID: 6496502899528591210, guid: 2a598868072024c9d9dcabbcbd9ae9b1, type: 3}
   _overrides: []
