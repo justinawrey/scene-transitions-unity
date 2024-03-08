@@ -41,7 +41,7 @@ namespace SceneTransitions
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-    public static void OnAfterSceneLoad()
+    public static void OnAfterAssembliesLoaded()
     {
       TryLoadSettings();
     }
