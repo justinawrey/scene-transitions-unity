@@ -23,15 +23,6 @@ namespace SceneTransitions
             Setup();
         }
 
-        private IEnumerator LoadSceneAsync(string name)
-        {
-            AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(name);
-            while (!asyncLoad.isDone)
-            {
-                yield return null;
-            }
-        }
-
         public void LoadScene(
             string toSceneName,
             List<SetupRoutine> setupRoutines,
@@ -85,7 +76,7 @@ namespace SceneTransitions
                 yield return routine;
             }
 
-            yield return LoadSceneAsync(toSceneName);
+            yield return AsyncLoader.LoadSceneAsync(toSceneName);
 
             foreach (IEnumerator routine in afterNextSceneLoadSetupRoutines)
             {

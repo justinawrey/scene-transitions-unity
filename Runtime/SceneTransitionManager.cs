@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace SceneTransitions
 {
@@ -46,6 +47,16 @@ namespace SceneTransitions
         public static void OnAfterAssembliesLoaded()
         {
             TryLoadSettings();
+        }
+
+        public static IEnumerator LoadSceneAdditive(string toSceneName)
+        {
+            yield return AsyncLoader.LoadSceneAsync(toSceneName, LoadSceneMode.Additive);
+        }
+
+        public static IEnumerator UnloadSceneAdditive(string toSceneName)
+        {
+            yield return AsyncLoader.UnloadSceneAsync(toSceneName);
         }
 
         public static void LoadScene(string toSceneName, List<SetupRoutine> setupRoutines = null)
