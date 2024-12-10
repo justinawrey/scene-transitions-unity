@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,7 +9,7 @@ namespace SceneTransitions
     public enum SceneTransitionCallbackTiming
     {
         BeforeNextSceneLoad,
-        AfterNextSceneLoad
+        AfterNextSceneLoad,
     }
 
     public class SetupRoutine
@@ -59,11 +60,16 @@ namespace SceneTransitions
             yield return AsyncLoader.UnloadSceneAsync(toSceneName);
         }
 
-        public static void LoadScene(string toSceneName, List<SetupRoutine> setupRoutines = null)
+        public static Task<bool> LoadScene(
+            string toSceneName,
+            List<SetupRoutine> setupRoutines = null
+        )
         {
+            var taskCompletionSource = new TaskCompletionSource<bool>();
             if (_transitionObject != null)
             {
-                return;
+                taskCompletionSource.SetResult(false);
+                return taskCompletionSource.Task;
             }
 
             SceneTransition transition = _settings.GetTransitionForScene(toSceneName);
@@ -74,14 +80,20 @@ namespace SceneTransitions
             );
             _transitionObject
                 .GetComponent<SceneTransition>()
-                .LoadScene(toSceneName, setupRoutines, OnTransitionComplete);
+                .LoadScene(
+                    toSceneName,
+                    setupRoutines,
+                    () => OnTransitionComplete(taskCompletionSource)
+                );
+
+            return taskCompletionSource.Task;
         }
 
-        private static void OnTransitionComplete()
+        private static void OnTransitionComplete(TaskCompletionSource<bool> tcs)
         {
             GameObject.Destroy(_transitionObject);
             _transitionObject = null;
+            tcs.SetResult(true);
         }
     }
 }
-
