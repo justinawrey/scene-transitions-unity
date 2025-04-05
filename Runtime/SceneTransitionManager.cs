@@ -57,6 +57,16 @@ namespace SceneTransitions
             TryLoadSettings();
         }
 
+        public static Task LoadSceneAdditiveTask(string toSceneName)
+        {
+            return AsyncLoader.LoadSceneAsyncTask(toSceneName, LoadSceneMode.Additive);
+        }
+
+        public static Task UnloadSceneAdditiveTask(string toSceneName)
+        {
+            return AsyncLoader.UnloadSceneAsyncTask(toSceneName);
+        }
+
         public static IEnumerator LoadSceneAdditive(string toSceneName)
         {
             yield return AsyncLoader.LoadSceneAsync(toSceneName, LoadSceneMode.Additive);
