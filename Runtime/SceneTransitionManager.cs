@@ -12,6 +12,13 @@ namespace SceneTransitions
         AfterNextSceneLoad,
     }
 
+    public class Tasks
+    {
+        public Task TransitionedOut;
+        public Task NextSceneLoaded;
+        public Task TransitionComplete;
+    }
+
     public class SetupRoutine
     {
         private IEnumerator _routine;
@@ -60,16 +67,22 @@ namespace SceneTransitions
             yield return AsyncLoader.UnloadSceneAsync(toSceneName);
         }
 
-        public static Task<bool> LoadScene(
-            string toSceneName,
-            List<SetupRoutine> setupRoutines = null
-        )
+        public static Tasks LoadScene(string toSceneName, List<SetupRoutine> setupRoutines = null)
         {
-            var taskCompletionSource = new TaskCompletionSource<bool>();
+            var transitionedOutTcs = new TaskCompletionSource<bool>();
+            var nextSceneLoadedTcs = new TaskCompletionSource<bool>();
+            var transitionCompleteTcs = new TaskCompletionSource<bool>();
+            Tasks tasks = new();
+            tasks.TransitionedOut = transitionedOutTcs.Task;
+            tasks.NextSceneLoaded = nextSceneLoadedTcs.Task;
+            tasks.TransitionComplete = transitionCompleteTcs.Task;
+
             if (_transitionObject != null)
             {
-                taskCompletionSource.SetResult(false);
-                return taskCompletionSource.Task;
+                transitionedOutTcs.SetResult(false);
+                nextSceneLoadedTcs.SetResult(false);
+                transitionCompleteTcs.SetResult(false);
+                return tasks;
             }
 
             SceneTransition transition = _settings.GetTransitionForScene(toSceneName);
@@ -83,10 +96,22 @@ namespace SceneTransitions
                 .LoadScene(
                     toSceneName,
                     setupRoutines,
-                    () => OnTransitionComplete(taskCompletionSource)
+                    () => OnTransitionedOut(transitionedOutTcs),
+                    () => OnNextSceneLoaded(nextSceneLoadedTcs),
+                    () => OnTransitionComplete(transitionCompleteTcs)
                 );
 
-            return taskCompletionSource.Task;
+            return tasks;
+        }
+
+        private static void OnTransitionedOut(TaskCompletionSource<bool> tcs)
+        {
+            tcs.SetResult(true);
+        }
+
+        private static void OnNextSceneLoaded(TaskCompletionSource<bool> tcs)
+        {
+            tcs.SetResult(true);
         }
 
         private static void OnTransitionComplete(TaskCompletionSource<bool> tcs)

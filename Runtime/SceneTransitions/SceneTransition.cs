@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -26,10 +27,20 @@ namespace SceneTransitions
         public void LoadScene(
             string toSceneName,
             List<SetupRoutine> setupRoutines,
+            Action OnTransitionedOut,
+            Action OnNextSceneLoaded,
             Action OnFinishCallback
         )
         {
-            StartCoroutine(LoadSceneRoutine(toSceneName, setupRoutines, OnFinishCallback));
+            StartCoroutine(
+                LoadSceneRoutine(
+                    toSceneName,
+                    setupRoutines,
+                    OnTransitionedOut,
+                    OnNextSceneLoaded,
+                    OnFinishCallback
+                )
+            );
         }
 
         private void NotifyGameObjects(string cbName)
@@ -45,7 +56,9 @@ namespace SceneTransitions
         private IEnumerator LoadSceneRoutine(
             string toSceneName,
             List<SetupRoutine> setupRoutines,
-            Action OnFinishCallback
+            Action OnTransitionedOut,
+            Action OnNextSceneLoaded,
+            Action OnFinish
         )
         {
             List<IEnumerator> beforeNextSceneLoadSetupRoutines = new List<IEnumerator>();
@@ -71,6 +84,7 @@ namespace SceneTransitions
             yield return TransitionOut();
             NotifyGameObjects("OnTransitionOutEnd");
 
+            OnTransitionedOut();
             foreach (IEnumerator routine in beforeNextSceneLoadSetupRoutines)
             {
                 yield return routine;
@@ -78,6 +92,7 @@ namespace SceneTransitions
 
             yield return AsyncLoader.LoadSceneAsync(toSceneName);
 
+            OnNextSceneLoaded();
             foreach (IEnumerator routine in afterNextSceneLoadSetupRoutines)
             {
                 yield return routine;
@@ -87,8 +102,7 @@ namespace SceneTransitions
             yield return TransitionIn();
             NotifyGameObjects("OnTransitionInEnd");
 
-            OnFinishCallback();
+            OnFinish();
         }
     }
 }
-
