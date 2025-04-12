@@ -26,7 +26,6 @@ namespace SceneTransitions
 
         public void LoadScene(
             string toSceneName,
-            List<SetupRoutine> setupRoutines,
             Action OnTransitionedOut,
             Action OnNextSceneLoaded,
             Action OnFinishCallback
@@ -35,7 +34,6 @@ namespace SceneTransitions
             StartCoroutine(
                 LoadSceneRoutine(
                     toSceneName,
-                    setupRoutines,
                     OnTransitionedOut,
                     OnNextSceneLoaded,
                     OnFinishCallback
@@ -45,7 +43,7 @@ namespace SceneTransitions
 
         private void NotifyGameObjects(string cbName)
         {
-            List<GameObject> rootObjects = new List<GameObject>();
+            List<GameObject> rootObjects = new();
             SceneManager.GetActiveScene().GetRootGameObjects(rootObjects);
             foreach (GameObject gameObject in rootObjects)
             {
@@ -55,48 +53,20 @@ namespace SceneTransitions
 
         private IEnumerator LoadSceneRoutine(
             string toSceneName,
-            List<SetupRoutine> setupRoutines,
             Action OnTransitionedOut,
             Action OnNextSceneLoaded,
             Action OnFinish
         )
         {
-            List<IEnumerator> beforeNextSceneLoadSetupRoutines = new List<IEnumerator>();
-            List<IEnumerator> afterNextSceneLoadSetupRoutines = new List<IEnumerator>();
-
-            // preserve sort order!
-            if (setupRoutines != null)
-            {
-                foreach (SetupRoutine routine in setupRoutines)
-                {
-                    if (routine.Timing == SceneTransitionCallbackTiming.BeforeNextSceneLoad)
-                    {
-                        beforeNextSceneLoadSetupRoutines.Add(routine.Routine);
-                    }
-                    else
-                    {
-                        afterNextSceneLoadSetupRoutines.Add(routine.Routine);
-                    }
-                }
-            }
-
             NotifyGameObjects("OnTransitionOutStart");
             yield return TransitionOut();
             NotifyGameObjects("OnTransitionOutEnd");
 
             OnTransitionedOut();
-            foreach (IEnumerator routine in beforeNextSceneLoadSetupRoutines)
-            {
-                yield return routine;
-            }
 
             yield return AsyncLoader.LoadSceneAsync(toSceneName);
 
             OnNextSceneLoaded();
-            foreach (IEnumerator routine in afterNextSceneLoadSetupRoutines)
-            {
-                yield return routine;
-            }
 
             NotifyGameObjects("OnTransitionInStart");
             yield return TransitionIn();

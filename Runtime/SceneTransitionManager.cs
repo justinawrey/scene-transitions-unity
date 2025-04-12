@@ -1,37 +1,15 @@
 using System.Collections;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace SceneTransitions
 {
-    public enum SceneTransitionCallbackTiming
-    {
-        BeforeNextSceneLoad,
-        AfterNextSceneLoad,
-    }
-
     public class Tasks
     {
         public Task TransitionedOut;
         public Task NextSceneLoaded;
         public Task TransitionComplete;
-    }
-
-    public class SetupRoutine
-    {
-        private IEnumerator _routine;
-        private SceneTransitionCallbackTiming _timing;
-
-        public IEnumerator Routine => _routine;
-        public SceneTransitionCallbackTiming Timing => _timing;
-
-        public SetupRoutine(IEnumerator routine, SceneTransitionCallbackTiming timing)
-        {
-            _routine = routine;
-            _timing = timing;
-        }
     }
 
     public static class SceneTransitionManager
@@ -52,7 +30,7 @@ namespace SceneTransitions
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-        public static void OnAfterAssembliesLoaded()
+        public static void Initialize()
         {
             TryLoadSettings();
         }
@@ -77,15 +55,17 @@ namespace SceneTransitions
             yield return AsyncLoader.UnloadSceneAsync(toSceneName);
         }
 
-        public static Tasks LoadScene(string toSceneName, List<SetupRoutine> setupRoutines = null)
+        public static Tasks LoadScene(string toSceneName)
         {
             var transitionedOutTcs = new TaskCompletionSource<bool>();
             var nextSceneLoadedTcs = new TaskCompletionSource<bool>();
             var transitionCompleteTcs = new TaskCompletionSource<bool>();
-            Tasks tasks = new();
-            tasks.TransitionedOut = transitionedOutTcs.Task;
-            tasks.NextSceneLoaded = nextSceneLoadedTcs.Task;
-            tasks.TransitionComplete = transitionCompleteTcs.Task;
+            Tasks tasks = new()
+            {
+                TransitionedOut = transitionedOutTcs.Task,
+                NextSceneLoaded = nextSceneLoadedTcs.Task,
+                TransitionComplete = transitionCompleteTcs.Task,
+            };
 
             if (_transitionObject != null)
             {
@@ -105,7 +85,6 @@ namespace SceneTransitions
                 .GetComponent<SceneTransition>()
                 .LoadScene(
                     toSceneName,
-                    setupRoutines,
                     () => OnTransitionedOut(transitionedOutTcs),
                     () => OnNextSceneLoaded(nextSceneLoadedTcs),
                     () => OnTransitionComplete(transitionCompleteTcs)

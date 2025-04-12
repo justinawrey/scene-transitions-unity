@@ -27,7 +27,7 @@ namespace SceneTransitions
         private List<SceneTransition> _defaultTransitions;
 
         [SerializeField]
-        private List<SceneTransitionSetting> _overrides = new List<SceneTransitionSetting>();
+        private List<SceneTransitionSetting> _overrides = new();
 
         public SceneTransition EntryTransition =>
             _enterFirstSceneTransitions[Random.Range(0, _enterFirstSceneTransitions.Count)];
@@ -46,4 +46,3 @@ namespace SceneTransitions
         }
     }
 }
-

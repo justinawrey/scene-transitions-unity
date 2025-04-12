@@ -19,7 +19,7 @@ namespace SceneTransitions
         {
             while (!operation.isDone)
             {
-                await Task.Delay(1);
+                await Task.Yield();
             }
         }
 
