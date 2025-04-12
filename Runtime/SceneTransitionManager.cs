@@ -1,15 +1,13 @@
-using System.Collections;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace SceneTransitions
 {
-    public class Tasks
+    public class LoadTasks
     {
-        public Task TransitionedOut;
-        public Task NextSceneLoaded;
-        public Task TransitionComplete;
+        public UniTask TransitionedOut;
+        public UniTask NextSceneLoaded;
+        public UniTask TransitionComplete;
     }
 
     public static class SceneTransitionManager
@@ -35,32 +33,12 @@ namespace SceneTransitions
             TryLoadSettings();
         }
 
-        public static Task LoadSceneAdditiveTask(string toSceneName)
+        public static LoadTasks LoadScene(string toSceneName)
         {
-            return AsyncLoader.LoadSceneAsyncTask(toSceneName, LoadSceneMode.Additive);
-        }
-
-        public static Task UnloadSceneAdditiveTask(string toSceneName)
-        {
-            return AsyncLoader.UnloadSceneAsyncTask(toSceneName);
-        }
-
-        public static IEnumerator LoadSceneAdditive(string toSceneName)
-        {
-            yield return AsyncLoader.LoadSceneAsync(toSceneName, LoadSceneMode.Additive);
-        }
-
-        public static IEnumerator UnloadSceneAdditive(string toSceneName)
-        {
-            yield return AsyncLoader.UnloadSceneAsync(toSceneName);
-        }
-
-        public static Tasks LoadScene(string toSceneName)
-        {
-            var transitionedOutTcs = new TaskCompletionSource<bool>();
-            var nextSceneLoadedTcs = new TaskCompletionSource<bool>();
-            var transitionCompleteTcs = new TaskCompletionSource<bool>();
-            Tasks tasks = new()
+            var transitionedOutTcs = new UniTaskCompletionSource();
+            var nextSceneLoadedTcs = new UniTaskCompletionSource();
+            var transitionCompleteTcs = new UniTaskCompletionSource();
+            LoadTasks tasks = new()
             {
                 TransitionedOut = transitionedOutTcs.Task,
                 NextSceneLoaded = nextSceneLoadedTcs.Task,
@@ -69,9 +47,9 @@ namespace SceneTransitions
 
             if (_transitionObject != null)
             {
-                transitionedOutTcs.SetResult(false);
-                nextSceneLoadedTcs.SetResult(false);
-                transitionCompleteTcs.SetResult(false);
+                transitionedOutTcs.TrySetResult();
+                nextSceneLoadedTcs.TrySetResult();
+                transitionCompleteTcs.TrySetResult();
                 return tasks;
             }
 
@@ -93,21 +71,21 @@ namespace SceneTransitions
             return tasks;
         }
 
-        private static void OnTransitionedOut(TaskCompletionSource<bool> tcs)
+        private static void OnTransitionedOut(UniTaskCompletionSource tcs)
         {
-            tcs.SetResult(true);
+            tcs.TrySetResult();
         }
 
-        private static void OnNextSceneLoaded(TaskCompletionSource<bool> tcs)
+        private static void OnNextSceneLoaded(UniTaskCompletionSource tcs)
         {
-            tcs.SetResult(true);
+            tcs.TrySetResult();
         }
 
-        private static void OnTransitionComplete(TaskCompletionSource<bool> tcs)
+        private static void OnTransitionComplete(UniTaskCompletionSource tcs)
         {
             GameObject.Destroy(_transitionObject);
             _transitionObject = null;
-            tcs.SetResult(true);
+            tcs.TrySetResult();
         }
     }
 }

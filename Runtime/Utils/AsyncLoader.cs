@@ -15,27 +15,6 @@ namespace SceneTransitions
             }
         }
 
-        private static async Task WaitForAsyncOperationTask(AsyncOperation operation)
-        {
-            while (!operation.isDone)
-            {
-                await Task.Yield();
-            }
-        }
-
-        public static Task LoadSceneAsyncTask(
-            string name,
-            LoadSceneMode mode = LoadSceneMode.Single
-        )
-        {
-            return WaitForAsyncOperationTask(SceneManager.LoadSceneAsync(name, mode));
-        }
-
-        public static Task UnloadSceneAsyncTask(string name)
-        {
-            return WaitForAsyncOperationTask(SceneManager.UnloadSceneAsync(name));
-        }
-
         public static IEnumerator LoadSceneAsync(
             string name,
             LoadSceneMode mode = LoadSceneMode.Single

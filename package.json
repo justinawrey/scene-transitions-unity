@@ -1,11 +1,14 @@
 {
   "name": "com.blueoyster.scene-transitions-unity",
-  "version": "2.7.2",
+  "version": "3.0.0",
   "description": "Smooth scene transitions for Unity.",
   "displayName": "scene-transitions-unity",
   "author": {
     "name": "Justin Awrey",
     "email": "justin@justinawrey.com",
     "url": "https://justinawrey.com"
+  },
+  "dependencies": {
+    "com.cysharp.unitask": "2.5.10"
   }
 }
